@@ -6,6 +6,7 @@
 #include <unordered_set>
 #include <unordered_map>
 #include "color.h"
+#include "output_group.h"
 #include "vector.h"
 #include "view.h"
 
@@ -22,7 +23,7 @@ public:
     void connect(Neuron *neuron);
 
     void activate();
-    void propagate_activation();
+    void propagate_activation(std::vector<OutputGroup*> &output_groups);
     void update_activation();
     void update_weights();
 

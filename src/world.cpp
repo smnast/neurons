@@ -11,6 +11,7 @@ World::~World() {
 
 void World::init() {
     create_input_groups();
+    create_output_groups();
     generate_neurons(spawn_radius, num_neurons);
 
     SDL_AddTimer(update_period, [](Uint32 interval, void *param) -> Uint32 {
@@ -21,24 +22,34 @@ void World::init() {
 }
 
 void World::update() {
+    // Randomize the direction of each neuron
     for (Neuron *neuron : neurons) {
         neuron->randomize_direction();
     }
 
+    // Propagate activation through the network
     for (InputGroup *input_group : input_groups) {
         input_group->propagate_activation(neurons);
     }
+
     for (Neuron *neuron : neurons) {
-        neuron->propagate_activation();
+        neuron->propagate_activation(output_groups);
     }
 
+    // Update the activations
     for (InputGroup *input_group : input_groups) {
         input_group->update_activation();
     }
+
     for (Neuron *neuron : neurons) {
         neuron->update_activation();
     }
+    
+    for (OutputGroup *output_group : output_groups) {
+        output_group->update_activation();
+    }
 
+    // Update the weights
     for (Neuron *neuron : neurons) {
         neuron->update_weights();
     }
@@ -62,6 +73,9 @@ void World::render(SDL_Renderer *renderer) {
     for (InputGroup *input_group : input_groups) {
         input_group->render(renderer, view);
     }
+    for (OutputGroup *output_group : output_groups) {
+        output_group->render(renderer, view);
+    }
 }
 
 void World::handle_event(SDL_Event &e) {
@@ -74,10 +88,20 @@ void World::handle_event(SDL_Event &e) {
 void World::create_input_groups() {
     for (int i = 0; i < num_input_groups; i++) {
         double angle = (double)i / num_input_groups * 2 * M_PI;
-        double x = spawn_radius * cos(angle);
-        double y = spawn_radius * sin(angle);
+        double x = input_group_spawn_radius * cos(angle);
+        double y = input_group_spawn_radius * sin(angle);
         Vector2D position(x, y);
         input_groups.push_back(new InputGroup(position));
+    }
+}
+
+void World::create_output_groups() {
+    for (int i = 0; i < num_output_groups; i++) {
+        double angle = (double)i / num_output_groups * 2 * M_PI;
+        double x = output_group_spawn_radius * cos(angle);
+        double y = output_group_spawn_radius * sin(angle);
+        Vector2D position(x, y);
+        output_groups.push_back(new OutputGroup(position));
     }
 }
 

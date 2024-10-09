@@ -47,13 +47,23 @@ void Neuron::activate() {
     activation = std::numeric_limits<double>::infinity();
 }
 
-void Neuron::propagate_activation() {
+void Neuron::propagate_activation(std::vector<OutputGroup*> &output_groups) {
     if (!active) {
         return;
     }
 
     for (Neuron *neuron : connections) {
         neuron->activation += modified_sigmoid(connection_weights.at(neuron));
+    }
+
+    for (OutputGroup *output_group : output_groups) {
+        Vector2D diff = output_group->get_position() - position;
+        double distance = diff.magnitude();
+        double total_collider_distance = collider_radius + output_group->get_collider_radius();
+
+        if (distance < total_collider_distance) {
+            output_group->activate();
+        }
     }
 }
 
