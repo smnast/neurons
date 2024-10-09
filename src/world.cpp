@@ -1,4 +1,5 @@
 #include "world.h"
+#include "texture_manager.h"
 
 World::World() {
     view = new View();
@@ -8,33 +9,50 @@ World::~World() {
     delete view;
 }
 
-void World::update() {}
+void World::init() {
+    generate_neurons(spawn_radius, num_neurons);
+
+    SDL_AddTimer(500, [](Uint32 interval, void *param) -> Uint32 {
+        World *world = static_cast<World*>(param);
+        world->update();
+        return interval;
+    }, this);
+}
+
+void World::update() {
+    for (Neuron &neuron : neurons) {
+        neuron.randomize_direction();
+    }
+}
+
+void World::step(double delta_time) {
+    for (Neuron &neuron : neurons) {
+        neuron.move();
+        // neuron.collide(neurons);
+    }
+}
 
 void World::render(SDL_Renderer *renderer) {
     grid.render(renderer, view);
-{
-    SDL_Rect rect;
-    rect.x = 0;
-    rect.y = 0;
-    rect.w = 50;
-    rect.h = 50;
-    rect = view->world_to_view(rect);
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    SDL_RenderFillRect(renderer, &rect);
-}
-
-{
-    SDL_Rect rect;
-    rect.x = 200;
-    rect.y = 200;
-    rect.w = 50;
-    rect.h = 50;
-    rect = view->world_to_view(rect);
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    SDL_RenderFillRect(renderer, &rect);
-}
+    for (Neuron &neuron : neurons) {
+        neuron.render(renderer, view);
+    }
 }
 
 void World::handle_event(SDL_Event &e) {
     if (view->handle_event(e)) return;
+}
+
+void World::generate_neurons(double spawn_radius, int num_neurons) {
+    TextureManager &texture_manager = TextureManager::get_instance();
+    SDL_Texture *neuron_texture = texture_manager.get_texture("neuron");
+
+    for (int i = 0; i < num_neurons; i++) {
+        double angle = (double)rand() / RAND_MAX * 2 * M_PI;
+        double radius = (double)rand() / RAND_MAX * spawn_radius;
+        double x = radius * cos(angle);
+        double y = radius * sin(angle);
+        Vector2D position(x, y);
+        neurons.push_back(Neuron(position, neuron_texture));
+    }
 }

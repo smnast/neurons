@@ -4,6 +4,9 @@
 #include <SDL2/SDL.h>
 #include "vector.h"
 
+#define INIT_WINDOW_WIDTH 800
+#define INIT_WINDOW_HEIGHT 600
+
 class View {
 public:
     View();
@@ -23,8 +26,8 @@ public:
 private:
     float zoom_amount;
     const float zoom_speed = 1.1;
-    const float camera_width = 800; // TODO: don't hardcode these values
-    const float camera_height = 600; // TODO: don't hardcode these values
+    float camera_width = INIT_WINDOW_WIDTH;
+    float camera_height = INIT_WINDOW_HEIGHT;
     const float max_zoom = 10.0;
     const float min_zoom = 0.1;
 

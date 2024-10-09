@@ -45,6 +45,13 @@ bool View::handle_event(SDL_Event &e) {
         } else {
             return false;
         }
+    } else if (e.type == SDL_WINDOWEVENT) {
+        if (e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+            camera_width = e.window.data1;
+            camera_height = e.window.data2;
+        } else {
+            return false;
+        }
     } else {
         return false;
     }

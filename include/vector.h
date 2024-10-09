@@ -11,6 +11,10 @@ public:
     Vector2D operator-(const Vector2D &other) const;
     Vector2D operator*(double scalar) const;
     Vector2D operator/(double scalar) const;
+    Vector2D &operator+=(const Vector2D &other);
+    Vector2D &operator-=(const Vector2D &other);
+    Vector2D &operator*=(double scalar);
+    Vector2D &operator/=(double scalar);
 
     double x;
     double y;
@@ -26,6 +30,10 @@ public:
     Vector3D operator-(const Vector3D &other) const;
     Vector3D operator*(double scalar) const;
     Vector3D operator/(double scalar) const;
+    Vector3D &operator+=(const Vector3D &other);
+    Vector3D &operator-=(const Vector3D &other);
+    Vector3D &operator*=(double scalar);
+    Vector3D &operator/=(double scalar);
 
     double x;
     double y;
