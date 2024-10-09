@@ -22,12 +22,15 @@ void World::init() {
 void World::update() {
     for (Neuron *neuron : neurons) {
         neuron->randomize_direction();
+        neuron->propagate_activation();
+        neuron->update_activation();
+        neuron->update_weights();
     }
 }
 
 void World::step(double delta_time) {
     for (Neuron *neuron : neurons) {
-        neuron->move();
+        neuron->move(delta_time);
         neuron->collide(neurons);
     }
 }
@@ -43,12 +46,23 @@ void World::render(SDL_Renderer *renderer) {
 }
 
 void World::handle_event(SDL_Event &e) {
+    // Allow neurons to handle the event first, and allow all neurons to handle the event
+    // TODO: add a box select (or similar) for activation
+    bool neuron_handled = false;
+    for (Neuron *neuron : neurons) {
+        if (neuron->handle_event(e, view)) {
+            neuron_handled = true;
+        }
+    }
+    if (neuron_handled) return;
+
     if (view->handle_event(e)) return;
 }
 
 void World::generate_neurons(double spawn_radius, int num_neurons) {
     TextureManager &texture_manager = TextureManager::get_instance();
     SDL_Texture *neuron_texture = texture_manager.get_texture("neuron");
+    SDL_Texture *neuron_activated_texture = texture_manager.get_texture("neuron_activated");
 
     for (int i = 0; i < num_neurons; i++) {
         double angle = (double)rand() / RAND_MAX * 2 * M_PI;
@@ -56,6 +70,6 @@ void World::generate_neurons(double spawn_radius, int num_neurons) {
         double x = radius * cos(angle);
         double y = radius * sin(angle);
         Vector2D position(x, y);
-        neurons.push_back(new Neuron(position, neuron_texture));
+        neurons.push_back(new Neuron(position, neuron_texture, neuron_activated_texture));
     }
 }

@@ -1,5 +1,6 @@
 #include "grid.h"
 #include <iostream>
+#include <SDL2/SDL2_gfxPrimitives.h>
 
 Grid::Grid() : grid_spacing(40.0), grid_color(Color(0x30, 0x30, 0x30)) {}
 
@@ -16,19 +17,21 @@ void Grid::render(SDL_Renderer *renderer, View *view) {
 }
 
 void Grid::draw_grid(SDL_Renderer *renderer, View *view, double left_x, double right_x, double top_y, double bottom_y, double spacing) {
-    SDL_SetRenderDrawColor(renderer, grid_color.r, grid_color.g, grid_color.b, grid_color.a);
+    Uint8 line_width = 1;
 
     double x_start = left_x - fmod(left_x, spacing);
     for (double x = x_start; x <= right_x; x += spacing) {
         Vector2D start = view->world_to_view(Vector2D(x, top_y));
         Vector2D end = view->world_to_view(Vector2D(x, bottom_y));
-        SDL_RenderDrawLine(renderer, start.x, start.y, end.x, end.y);
+
+        thickLineRGBA(renderer, start.x, start.y, end.x, end.y, line_width, grid_color.r, grid_color.g, grid_color.b, grid_color.a);
     }
 
     double y_start = top_y - fmod(top_y, spacing);
     for (double y = y_start; y <= bottom_y; y += spacing) {
         Vector2D start = view->world_to_view(Vector2D(left_x, y));
         Vector2D end = view->world_to_view(Vector2D(right_x, y));
-        SDL_RenderDrawLine(renderer, start.x, start.y, end.x, end.y);
+        
+        thickLineRGBA(renderer, start.x, start.y, end.x, end.y, line_width, grid_color.r, grid_color.g, grid_color.b, grid_color.a);
     }
 }

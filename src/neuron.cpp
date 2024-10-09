@@ -1,7 +1,7 @@
 #include "neuron.h"
 #include <SDL2/SDL2_gfxPrimitives.h>
 
-Neuron::Neuron(const Vector2D &pos, SDL_Texture *sprite) : position(pos), sprite(sprite) {}
+Neuron::Neuron(const Vector2D &pos, SDL_Texture *sprite, SDL_Texture *sprite_activated) : position(pos), sprite(sprite), sprite_activated(sprite_activated) {}
 
 Neuron::~Neuron() {}
 
@@ -10,8 +10,8 @@ void Neuron::randomize_direction() {
     direction = Vector2D(cos(angle), sin(angle));
 }
 
-void Neuron::move() {
-    position += direction * neuron_speed;
+void Neuron::move(double delta_time) {
+    position += direction * neuron_speed * delta_time;
 }
 
 void Neuron::collide(const std::vector<Neuron*> &neurons) {
@@ -23,12 +23,14 @@ void Neuron::collide(const std::vector<Neuron*> &neurons) {
         Vector2D diff = position - neuron->position;
         double distance = diff.magnitude();
 
-        if (distance < collider_radius) {
+        double total_collider_distance = collider_radius + neuron->collider_radius;
+
+        if (distance < total_collider_distance) {
             // Connect the neurons
             this->connect(neuron);
 
             // Push them away from each other
-            double overlap = collider_radius - distance;
+            double overlap = total_collider_distance - distance;
             Vector2D direction = diff / distance;
             position += direction * overlap / 2;
             neuron->position -= direction * overlap / 2;
@@ -38,12 +40,84 @@ void Neuron::collide(const std::vector<Neuron*> &neurons) {
 
 void Neuron::connect(Neuron *neuron) {
     connections.insert(neuron);
+    connection_weights[neuron] = initial_connection_weight;
+}
+
+void Neuron::activate() {
+    activation = std::numeric_limits<double>::infinity();
+}
+
+void Neuron::propagate_activation() {
+    if (!active) {
+        return;
+    }
+
+    for (Neuron *neuron : connections) {
+        neuron->activation += modified_sigmoid(connection_weights.at(neuron));
+    }
+}
+
+void Neuron::update_activation() {
+    prev_active = active;
+    active = activation >= threshold && cur_refractory_period == 0;
+    activation = 0.0;
+
+    if (cur_refractory_period > 0) {
+        cur_refractory_period--;
+    }
+
+    if (active) {
+        cur_refractory_period = refractory_period;
+    }
+}
+
+void Neuron::update_weights() {
+    if (this->prev_active) {
+        for (Neuron *neuron : connections) {
+            if (neuron->active) {
+                connection_weights[neuron] += hebbian_increase;
+                connection_weights[neuron] = std::min(connection_weights[neuron], max_weight);
+            } else {
+                connection_weights[neuron] -= hebbian_decrease;
+                connection_weights[neuron] = std::max(connection_weights[neuron], min_weight);
+            }
+        }
+    }
+}
+
+bool Neuron::handle_event(SDL_Event &e, View *view) {
+    if (e.type == SDL_MOUSEBUTTONDOWN) {
+        if (e.button.button == SDL_BUTTON_LEFT) {
+            int x, y;
+            SDL_GetMouseState(&x, &y);
+            Vector2D mouse_position(x, y);
+
+            // Get the neuron's position in view coordinates (same coordinate system as mouse_position)
+            Vector2D view_position = view->world_to_view(position);
+
+            Vector2D diff = mouse_position - view_position;
+            double distance = diff.magnitude();
+
+            // Get the collider radius scaled to the view
+            double view_collider_radius = view->world_to_view(this->collider_radius);
+
+            // If mouse clicks on the neuron, activate it
+            if (distance < view_collider_radius) {
+                activate();
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 void Neuron::render_body(SDL_Renderer* renderer, View *view) const {
+    SDL_Texture *cur_sprite = active ? sprite_activated : sprite;
+
     // Get the texture's width and height
     int width, height;
-    SDL_QueryTexture(sprite, nullptr, nullptr, &width, &height);
+    SDL_QueryTexture(cur_sprite, nullptr, nullptr, &width, &height);
 
     // The neuron's rect in world coordinates
     SDL_Rect world_rect;
@@ -56,7 +130,7 @@ void Neuron::render_body(SDL_Renderer* renderer, View *view) const {
     SDL_Rect view_rect = view->world_to_view(world_rect);
 
     // Render the sprite
-    SDL_RenderCopy(renderer, sprite, nullptr, &view_rect);
+    SDL_RenderCopy(renderer, cur_sprite, nullptr, &view_rect);
 }
 
 void Neuron::render_connections(SDL_Renderer* renderer, View *view) const {
@@ -70,8 +144,16 @@ void Neuron::render_connections(SDL_Renderer* renderer, View *view) const {
         Vector2D view_end = view->world_to_view(end);
 
         // Render the line
-        Color line_color = connection_color;
-        Uint8 line_width = view->world_to_view(2.0);
+        Color line_color = active ? connection_color_activated : connection_color;
+        Uint8 line_width = view->world_to_view(modified_sigmoid(connection_weights.at(neuron)) + line_width_offset);
         thickLineRGBA(renderer, view_start.x, view_start.y, view_end.x, view_end.y, line_width, line_color.r, line_color.g, line_color.b, line_color.a);
     }
+}
+
+double Neuron::modified_sigmoid(double x) const {
+    return sigmoid(x) * 2 - 0.3;
+}
+
+double Neuron::sigmoid(double x) const {
+    return 1 / (1 + exp(-x));
 }

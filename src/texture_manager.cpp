@@ -3,6 +3,7 @@
 
 void TextureManager::load_textures(SDL_Renderer *renderer) {
     load_texture("neuron", "assets/images/neuron.png", renderer);
+    load_texture("neuron_activated", "assets/images/neuron_activated.png", renderer);
 }
 
 bool TextureManager::load_texture(const std::string &id, const std::string &filePath, SDL_Renderer *renderer) {

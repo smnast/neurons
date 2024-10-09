@@ -6,6 +6,7 @@ View::~View() {}
 
 void View::zoom(double amount) {
     zoom_amount *= amount;
+    zoom_amount = std::max(min_zoom, std::min(zoom_amount, max_zoom));
 }
 
 void View::pan(double x, double y) {

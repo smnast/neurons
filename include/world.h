@@ -24,8 +24,8 @@ private:
     View *view;
     Grid grid;
     std::vector<Neuron*> neurons;
-    const double spawn_radius = 100.0;
-    int num_neurons = 10;
+    const double spawn_radius = 1000.0;
+    int num_neurons = 1000;
 
     const int update_period = 250;
 

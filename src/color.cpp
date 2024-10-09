@@ -1,9 +1,9 @@
 #include "color.h"
 
-Color::Color() : r(0.0), g(0.0), b(0.0), a(1.0) {}
+Color::Color() : r(0x00), g(0x00), b(0x00), a(0xFF) {}
 
-Color::Color(double r, double g, double b) : r(r), g(g), b(b), a(1.0) {}
+Color::Color(Uint8 r, Uint8 g, Uint8 b) : r(r), g(g), b(b), a(0xFF) {}
 
-Color::Color(double r, double g, double b, double a) : r(r), g(g), b(b), a(a) {}
+Color::Color(Uint8 r, Uint8 g, Uint8 b, Uint8 a) : r(r), g(g), b(b), a(a) {}
 
 Color::~Color() {}
