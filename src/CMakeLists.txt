@@ -6,6 +6,7 @@ set(SOURCES
     vector.cpp
     color.cpp
     neuron.cpp
+    input_group.cpp
     texture_manager.cpp
 )
 

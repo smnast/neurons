@@ -15,7 +15,6 @@ public:
     ~Neuron();
 
     void randomize_direction();
-    // eventaully, we will have other functions to control the activations
 
     void move(double delta_time);
     void collide(const std::vector<Neuron*> &neurons);
@@ -27,10 +26,11 @@ public:
     void update_activation();
     void update_weights();
 
-    bool handle_event(SDL_Event &e, View *view);
-
     void render_body(SDL_Renderer* renderer, View *view) const;
     void render_connections(SDL_Renderer* renderer, View *view) const;
+
+    Vector2D get_position() const;
+    double get_collider_radius() const;
 
 protected:
     const float collider_radius = 20.0;

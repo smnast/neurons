@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 #include <vector>
 #include "grid.h"
+#include "input_group.h"
 #include "neuron.h"
 #include "view.h"
 
@@ -24,11 +25,16 @@ private:
     View *view;
     Grid grid;
     std::vector<Neuron*> neurons;
+    std::vector<InputGroup*> input_groups;
+
     const double spawn_radius = 1000.0;
-    int num_neurons = 1000;
+    int num_neurons = 500;
+
+    int num_input_groups = 10;
 
     const int update_period = 250;
 
+    void create_input_groups();
     void generate_neurons(double spawn_radius, int num_neurons);
 };
 

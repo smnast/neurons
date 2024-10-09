@@ -85,33 +85,6 @@ void Neuron::update_weights() {
     }
 }
 
-bool Neuron::handle_event(SDL_Event &e, View *view) {
-    if (e.type == SDL_MOUSEBUTTONDOWN) {
-        if (e.button.button == SDL_BUTTON_LEFT) {
-            int x, y;
-            SDL_GetMouseState(&x, &y);
-            Vector2D mouse_position(x, y);
-
-            // Get the neuron's position in view coordinates (same coordinate system as mouse_position)
-            Vector2D view_position = view->world_to_view(position);
-
-            Vector2D diff = mouse_position - view_position;
-            double distance = diff.magnitude();
-
-            // Get the collider radius scaled to the view
-            double view_collider_radius = view->world_to_view(this->collider_radius);
-
-            // If mouse clicks on the neuron, activate it
-            if (distance < view_collider_radius) {
-                activate();
-                return true;
-            }
-        }
-    }
-
-    return false;
-}
-
 void Neuron::render_body(SDL_Renderer* renderer, View *view) const {
     SDL_Texture *cur_sprite = active ? sprite_activated : sprite;
 
@@ -148,6 +121,14 @@ void Neuron::render_connections(SDL_Renderer* renderer, View *view) const {
         Uint8 line_width = view->world_to_view(modified_sigmoid(connection_weights.at(neuron)) + line_width_offset);
         thickLineRGBA(renderer, view_start.x, view_start.y, view_end.x, view_end.y, line_width, line_color.r, line_color.g, line_color.b, line_color.a);
     }
+}
+
+Vector2D Neuron::get_position() const {
+    return position;
+}
+
+double Neuron::get_collider_radius() const {
+    return collider_radius;
 }
 
 double Neuron::modified_sigmoid(double x) const {

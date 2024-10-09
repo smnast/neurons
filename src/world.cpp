@@ -10,6 +10,7 @@ World::~World() {
 }
 
 void World::init() {
+    create_input_groups();
     generate_neurons(spawn_radius, num_neurons);
 
     SDL_AddTimer(update_period, [](Uint32 interval, void *param) -> Uint32 {
@@ -22,8 +23,23 @@ void World::init() {
 void World::update() {
     for (Neuron *neuron : neurons) {
         neuron->randomize_direction();
+    }
+
+    for (InputGroup *input_group : input_groups) {
+        input_group->propagate_activation(neurons);
+    }
+    for (Neuron *neuron : neurons) {
         neuron->propagate_activation();
+    }
+
+    for (InputGroup *input_group : input_groups) {
+        input_group->update_activation();
+    }
+    for (Neuron *neuron : neurons) {
         neuron->update_activation();
+    }
+
+    for (Neuron *neuron : neurons) {
         neuron->update_weights();
     }
 }
@@ -43,20 +59,26 @@ void World::render(SDL_Renderer *renderer) {
     for (Neuron *neuron : neurons) {
         neuron->render_body(renderer, view);
     }
+    for (InputGroup *input_group : input_groups) {
+        input_group->render(renderer, view);
+    }
 }
 
 void World::handle_event(SDL_Event &e) {
-    // Allow neurons to handle the event first, and allow all neurons to handle the event
-    // TODO: add a box select (or similar) for activation
-    bool neuron_handled = false;
-    for (Neuron *neuron : neurons) {
-        if (neuron->handle_event(e, view)) {
-            neuron_handled = true;
-        }
+    for (InputGroup *input_group : input_groups) {
+        if (input_group->handle_event(e, view)) return;
     }
-    if (neuron_handled) return;
-
     if (view->handle_event(e)) return;
+}
+
+void World::create_input_groups() {
+    for (int i = 0; i < num_input_groups; i++) {
+        double angle = (double)i / num_input_groups * 2 * M_PI;
+        double x = spawn_radius * cos(angle);
+        double y = spawn_radius * sin(angle);
+        Vector2D position(x, y);
+        input_groups.push_back(new InputGroup(position));
+    }
 }
 
 void World::generate_neurons(double spawn_radius, int num_neurons) {
