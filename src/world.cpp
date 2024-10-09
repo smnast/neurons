@@ -12,7 +12,7 @@ World::~World() {
 void World::init() {
     generate_neurons(spawn_radius, num_neurons);
 
-    SDL_AddTimer(500, [](Uint32 interval, void *param) -> Uint32 {
+    SDL_AddTimer(update_period, [](Uint32 interval, void *param) -> Uint32 {
         World *world = static_cast<World*>(param);
         world->update();
         return interval;
@@ -20,22 +20,25 @@ void World::init() {
 }
 
 void World::update() {
-    for (Neuron &neuron : neurons) {
-        neuron.randomize_direction();
+    for (Neuron *neuron : neurons) {
+        neuron->randomize_direction();
     }
 }
 
 void World::step(double delta_time) {
-    for (Neuron &neuron : neurons) {
-        neuron.move();
-        // neuron.collide(neurons);
+    for (Neuron *neuron : neurons) {
+        neuron->move();
+        neuron->collide(neurons);
     }
 }
 
 void World::render(SDL_Renderer *renderer) {
     grid.render(renderer, view);
-    for (Neuron &neuron : neurons) {
-        neuron.render(renderer, view);
+    for (Neuron *neuron : neurons) {
+        neuron->render_connections(renderer, view);
+    }
+    for (Neuron *neuron : neurons) {
+        neuron->render_body(renderer, view);
     }
 }
 
@@ -53,6 +56,6 @@ void World::generate_neurons(double spawn_radius, int num_neurons) {
         double x = radius * cos(angle);
         double y = radius * sin(angle);
         Vector2D position(x, y);
-        neurons.push_back(Neuron(position, neuron_texture));
+        neurons.push_back(new Neuron(position, neuron_texture));
     }
 }

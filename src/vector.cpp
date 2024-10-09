@@ -1,4 +1,5 @@
 #include "vector.h"
+#include <math.h>
 
 Vector2D::Vector2D() : x(0), y(0) {}
 
@@ -44,6 +45,10 @@ Vector2D &Vector2D::operator/=(double scalar) {
     this->x /= scalar;
     this->y /= scalar;
     return *this;
+}
+
+double Vector2D::magnitude() const {
+    return std::sqrt(x * x + y * y);
 }
 
 Vector3D::Vector3D() : x(0), y(0) {}
@@ -94,4 +99,8 @@ Vector3D &Vector3D::operator/=(double scalar) {
     this->y /= scalar;
     this->z /= scalar;
     return *this;
+}
+
+double Vector3D::magnitude() const {
+    return std::sqrt(x * x + y * y + z * z);
 }

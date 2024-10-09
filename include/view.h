@@ -19,6 +19,7 @@ public:
 
     Vector2D world_to_view(Vector2D world_position);
     SDL_Rect world_to_view(SDL_Rect world_rect);
+    double world_to_view(double world_size);
 
     Vector2D get_position();
     SDL_Rect get_rect();

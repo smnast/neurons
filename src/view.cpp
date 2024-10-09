@@ -84,6 +84,10 @@ SDL_Rect View::world_to_view(SDL_Rect world_rect) {
     };
 }
 
+double View::world_to_view(double world_size) {
+    return world_size * zoom_amount;
+}
+
 Vector2D View::get_position() {
     return position;
 }

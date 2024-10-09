@@ -16,6 +16,8 @@ public:
     Vector2D &operator*=(double scalar);
     Vector2D &operator/=(double scalar);
 
+    double magnitude() const;
+
     double x;
     double y;
 };
@@ -34,6 +36,8 @@ public:
     Vector3D &operator-=(const Vector3D &other);
     Vector3D &operator*=(double scalar);
     Vector3D &operator/=(double scalar);
+
+    double magnitude() const;
 
     double x;
     double y;

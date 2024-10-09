@@ -23,9 +23,11 @@ public:
 private:
     View *view;
     Grid grid;
-    std::vector<Neuron> neurons;
-    const double spawn_radius = 500.0;
+    std::vector<Neuron*> neurons;
+    const double spawn_radius = 100.0;
     int num_neurons = 10;
+
+    const int update_period = 250;
 
     void generate_neurons(double spawn_radius, int num_neurons);
 };

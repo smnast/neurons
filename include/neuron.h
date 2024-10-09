@@ -3,6 +3,8 @@
 
 #include <SDL2/SDL.h>
 #include <vector>
+#include <unordered_set>
+#include "color.h"
 #include "vector.h"
 #include "view.h"
 
@@ -15,9 +17,12 @@ public:
     // eventaully, we will have other functions to control the activations
 
     void move();
-    void collide(const std::vector<Neuron> &neurons);
+    void collide(const std::vector<Neuron*> &neurons);
 
-    void render(SDL_Renderer* renderer, View *view) const;
+    void connect(Neuron *neuron);
+
+    void render_body(SDL_Renderer* renderer, View *view) const;
+    void render_connections(SDL_Renderer* renderer, View *view) const;
 
 protected:
     const float collider_radius = 40.0;
@@ -25,6 +30,11 @@ protected:
 private:
     Vector2D position;
     SDL_Texture *sprite;
+
+    Color connection_color = {0x21, 0x78, 0xAD, 0x7F};
+    Color connection_color_activated = {0xCF, 0x94, 0x1F, 0x7F};
+
+    std::unordered_set<Neuron*> connections;
 
     Vector2D direction;
     const float neuron_speed = 0.005;
