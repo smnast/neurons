@@ -66,7 +66,8 @@ void World::generate_neurons(double spawn_radius, int num_neurons) {
 
     for (int i = 0; i < num_neurons; i++) {
         double angle = (double)rand() / RAND_MAX * 2 * M_PI;
-        double radius = (double)rand() / RAND_MAX * spawn_radius;
+        // sqrt(rand) gets uniformly distributed coords in a circle (https://stackoverflow.com/a/50746409)
+        double radius = std::sqrt((double)rand() / RAND_MAX * spawn_radius * spawn_radius);
         double x = radius * cos(angle);
         double y = radius * sin(angle);
         Vector2D position(x, y);
