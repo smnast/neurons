@@ -22,6 +22,10 @@ void OutputGroup::render(SDL_Renderer* renderer, View* view) {
     filledCircleRGBA(renderer, view_position.x, view_position.y, view_radius, cur_color.r, cur_color.g, cur_color.b, cur_color.a);
 }
 
+double OutputGroup::get_dopamine() const {
+    return dopamine;
+}
+
 Vector2D OutputGroup::get_position() const {
     return position;
 }

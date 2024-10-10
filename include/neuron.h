@@ -23,8 +23,11 @@ public:
     void connect(Neuron *neuron);
 
     void activate();
+    void activate_dopamine(double dopamine);
     void propagate_activation(std::vector<OutputGroup*> &output_groups);
+    void propagate_dopamine(std::vector<OutputGroup*> &output_groups);
     void update_activation();
+    void update_dopamine();
     void update_weights();
 
     void render_body(SDL_Renderer* renderer, View *view) const;
@@ -36,6 +39,7 @@ public:
 protected:
     const float collider_radius = 20.0;
     bool active = false;
+    double dopamine = 0.0;
 
 private:
     Vector2D position;
@@ -55,6 +59,10 @@ private:
     double activation = 0.0;
     double threshold = 1.0;
 
+    double next_dopamine = 0.0;
+    double sensitivity = 0.0;
+    const double sensitivity_decay = 0.1;
+
     const double hebbian_increase = 1.0;
     const double hebbian_decrease = 0.1;
     const double max_weight = 5.0;
@@ -62,6 +70,15 @@ private:
 
     const int refractory_period = 5;
     int cur_refractory_period = 0;
+
+    const double dopamine_indicator_radius = 10;
+    const double min_dopamine = -1.0;
+    const double max_dopamine = 1.0;
+    Color negative_dopamine_color = {0x00, 0x00, 0x00, 0xFF};
+    Color neutral_dopamine_color = {0x00, 0x00, 0x00, 0x00};
+    Color positive_dopamine_color = {0xFF, 0xFF, 0xFF, 0xFF};
+
+    Color get_dopamine_indicator_color() const;
 
     // Added to the connection weight to ensure positive values
     const double line_width_offset = 0.4;

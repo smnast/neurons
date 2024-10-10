@@ -47,6 +47,10 @@ void Neuron::activate() {
     activation = std::numeric_limits<double>::infinity();
 }
 
+void Neuron::activate_dopamine(double dopamine) {
+    next_dopamine += dopamine;
+}
+
 void Neuron::propagate_activation(std::vector<OutputGroup*> &output_groups) {
     if (!active) {
         return;
@@ -67,6 +71,29 @@ void Neuron::propagate_activation(std::vector<OutputGroup*> &output_groups) {
     }
 }
 
+void Neuron::propagate_dopamine(std::vector<OutputGroup*> &output_groups) {
+    // If the neuron is not sensitive to dopamine then return early
+    if (sensitivity == 0.0) {
+        return;
+    }
+
+    for (OutputGroup *output_group : output_groups) {
+        Vector2D diff = output_group->get_position() - position;
+        double distance = diff.magnitude();
+        double total_collider_distance = collider_radius + output_group->get_collider_radius();
+
+        if (distance < total_collider_distance) {
+            activate_dopamine(output_group->get_dopamine());
+        }
+    }
+
+    for (Neuron *neuron : connections) {
+        next_dopamine += neuron->dopamine * sensitivity;
+        connection_weights[neuron] += neuron->dopamine * sensitivity;
+        connection_weights[neuron] = std::max(min_weight, std::min(connection_weights[neuron], max_weight));
+    }
+}
+
 void Neuron::update_activation() {
     prev_active = active;
     active = activation >= threshold && cur_refractory_period == 0;
@@ -78,7 +105,14 @@ void Neuron::update_activation() {
 
     if (active) {
         cur_refractory_period = refractory_period;
+        sensitivity = 1.0;
     }
+}
+
+void Neuron::update_dopamine() {
+    dopamine = std::tanh(next_dopamine);
+    next_dopamine = 0.0;
+    sensitivity = std::max(0.0, sensitivity - sensitivity_decay);
 }
 
 void Neuron::update_weights() {
@@ -114,6 +148,12 @@ void Neuron::render_body(SDL_Renderer* renderer, View *view) const {
 
     // Render the sprite
     SDL_RenderCopy(renderer, cur_sprite, nullptr, &view_rect);
+
+    // Render the dopamine indicator
+    Color dopamine_color = get_dopamine_indicator_color();
+    Vector2D view_position = view->world_to_view(position);
+    double view_radius = view->world_to_view(dopamine_indicator_radius);
+    filledCircleRGBA(renderer, view_position.x, view_position.y, view_radius, dopamine_color.r, dopamine_color.g, dopamine_color.b, dopamine_color.a);
 }
 
 void Neuron::render_connections(SDL_Renderer* renderer, View *view) const {
@@ -147,4 +187,24 @@ double Neuron::modified_sigmoid(double x) const {
 
 double Neuron::sigmoid(double x) const {
     return 1 / (1 + exp(-x));
+}
+
+Color Neuron::get_dopamine_indicator_color() const {
+    if (dopamine < 0) {
+        // Interpolate between the negative and neutral colors
+        double t = dopamine / min_dopamine;
+        Uint8 r = static_cast<Uint8>(neutral_dopamine_color.r * (1 - t) + negative_dopamine_color.r * t);
+        Uint8 g = static_cast<Uint8>(neutral_dopamine_color.g * (1 - t) + negative_dopamine_color.g * t);
+        Uint8 b = static_cast<Uint8>(neutral_dopamine_color.b * (1 - t) + negative_dopamine_color.b * t);
+        Uint8 a = static_cast<Uint8>(neutral_dopamine_color.a * (1 - t) + negative_dopamine_color.a * t);
+        return Color{r, g, b, a};
+    } else {
+        // Interpolate between the neutral and positive colors
+        double t = dopamine / max_dopamine;
+        Uint8 r = static_cast<Uint8>(neutral_dopamine_color.r * (1 - t) + positive_dopamine_color.r * t);
+        Uint8 g = static_cast<Uint8>(neutral_dopamine_color.g * (1 - t) + positive_dopamine_color.g * t);
+        Uint8 b = static_cast<Uint8>(neutral_dopamine_color.b * (1 - t) + positive_dopamine_color.b * t);
+        Uint8 a = static_cast<Uint8>(neutral_dopamine_color.a * (1 - t) + positive_dopamine_color.a * t);
+        return Color{r, g, b, a};
+    }
 }

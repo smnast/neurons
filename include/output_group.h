@@ -17,6 +17,8 @@ public:
 
     void render(SDL_Renderer *renderer, View *view);
 
+    double get_dopamine() const;
+
     Vector2D get_position() const;
     double get_collider_radius() const;
 
@@ -29,6 +31,8 @@ private:
 
     bool next_active = false;
     bool active = false;
+
+    const double dopamine = 1.0;
 };
 
 #endif // OUTPUT_GROUP_H

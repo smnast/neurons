@@ -36,6 +36,11 @@ void World::update() {
         neuron->propagate_activation(output_groups);
     }
 
+    // Propagate dopamine through the network
+    for (Neuron *neuron : neurons) {
+        neuron->propagate_dopamine(output_groups);
+    }
+
     // Update the activations
     for (InputGroup *input_group : input_groups) {
         input_group->update_activation();
@@ -47,6 +52,11 @@ void World::update() {
     
     for (OutputGroup *output_group : output_groups) {
         output_group->update_activation();
+    }
+
+    // Update the dopamine levels and sensitivities
+    for (Neuron *neuron : neurons) {
+        neuron->update_dopamine();
     }
 
     // Update the weights
